@@ -1,6 +1,9 @@
 # Backup folder
 backup/
 
+# prompt folder
+prompt/
+
 # Python cache
 __pycache__/
 *.pyc
@@ -11,7 +14,6 @@ __pycache__/
 
 # Data files (not tracked — too large and reproducible via scraping)
 data/raw/
-data/processed/
 data/fbref_html/
 
 # Claude Code local settings
