@@ -20,21 +20,25 @@ The analysis normalises cards by fouls committed to control for differences in p
 euro-football-discipline-stats/
 │
 ├── notebooks/
-│   ├── research_framework.ipynb      # Scientific goals, methodology, known limitations
-│   ├── data_scraping.ipynb           # Data collection from multiple sources
-│   └── eda_and_data_wrangling.ipynb  # Data quality checks, exploration, reshaping
+│   ├── 00_research_framework.ipynb     # Scientific goals, methodology, known limitations
+│   ├── 01_data_scraping.ipynb          # Data collection from multiple sources
+│   ├── 02_eda_and_wrangling.ipynb      # Data quality checks, exploration, reshaping
+│   ├── 03_single_season_test.ipynb     # Hypothesis test pipeline — one league, one season
+│   ├── 04_multi_season_analysis.ipynb  # Season-by-season extension (planned)
+│   └── 05_confounder_analysis.ipynb    # Home/away, opponents, referee effects (planned)
 │
 ├── src/
-│   ├── plots.py                      # Reusable plotting functions
+│   ├── plots.py                        # Reusable plotting functions (EDA)
+│   ├── hypothesis_tests.py             # Hypothesis test pipeline functions
 │   ├── scraper_football_data_co_uk.py
 │   ├── scraper_local_html.py
 │   └── scraper_espn_data.py
 │
 ├── data/
-│   ├── raw/                          # Raw scraped data (not tracked by git)
-│   └── processed/                    # Cleaned and reshaped data (not tracked by git)
+│   ├── raw/                            # Raw scraped data (not tracked by git)
+│   └── processed/                      # Cleaned and reshaped data (tracked by git)
 │
-└── prompt/                           # Project framing notes
+└── backup/                             # Draft notebooks and working files (not tracked by git)
 ```
 
 ---
@@ -42,7 +46,7 @@ euro-football-discipline-stats/
 ## Data Sources
 
 ### National Leagues
-Match-level data for 5 major European leagues over 10 seasons (2011/12 – 2025/26):
+Match-level data for 5 major European leagues over 15 seasons (2011/12 – 2025/26):
 - Serie A (Italy)
 - Premier League (England)
 - La Liga (Spain)
@@ -58,7 +62,7 @@ Season-aggregate data for UEFA club competitions (Champions League, Europa Leagu
 
 Source: FBref / ESPN
 
-> Note: international competition data cleaning is in progress. See `eda_and_data_wrangling.ipynb` for current status.
+> Note: international competition data cleaning is in progress. See `02_eda_and_wrangling.ipynb` for current status.
 
 ---
 
@@ -66,9 +70,12 @@ Source: FBref / ESPN
 
 | Notebook | Description |
 |---|---|
-| `research_framework.ipynb` | Lays out the scientific goals, data structure, analytical approach, and known limitations before any code is written |
-| `data_scraping.ipynb` | Collects raw data from multiple sources via web scraping |
-| `eda_and_data_wrangling.ipynb` | Checks data quality (nulls, duplicates, outliers), explores distributions, and reshapes data into a team-oriented structure for analysis |
+| `00_research_framework.ipynb` | Lays out the scientific goals, data structure, analytical approach, and known limitations before any code is written |
+| `01_data_scraping.ipynb` | Collects raw data from multiple sources via web scraping |
+| `02_eda_and_wrangling.ipynb` | Checks data quality (nulls, duplicates, outliers), explores distributions, and reshapes data into a team-oriented structure for analysis |
+| `03_single_season_test.ipynb` | Step-by-step hypothesis test for one league and season: Bernoulli model, z-test, exact binomial, assumption checks, bootstrap, Mann-Whitney — applied to four teams (Juventus, Napoli, Inter, Udinese) |
+| `04_multi_season_analysis.ipynb` | *(planned)* Season-by-season extension of the single-season pipeline |
+| `05_confounder_analysis.ipynb` | *(planned)* Controls for home/away split, opponent strength, and referee assignment |
 
 ---
 
@@ -85,7 +92,7 @@ Source: FBref / ESPN
 ## Setup
 
 ```bash
-pip install pandas numpy matplotlib seaborn
+pip install pandas numpy matplotlib seaborn scipy
 ```
 
 Notebooks were developed using Python 3.13 (Miniconda).
