@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 
 
 _DISCIPLINE_COL_LABELS = {
@@ -113,3 +114,27 @@ def plot_discipline_distributions(plot_data, league_order=None, palette='Set2'):
     fig_bar.tight_layout()
 
     return fig_violin, fig_bar
+
+
+def grey_missing(ax, pivot, teams, seasons):
+    """
+    Overlay grey rectangles on heatmap cells where pivot data is missing.
+
+    Call this after `sns.heatmap(...)` to fill NaN cells with a neutral grey,
+    distinguishing genuinely missing data (team not in league that season)
+    from low values that might otherwise blend into the colormap.
+
+    Parameters
+    ----------
+    ax      : matplotlib.axes.Axes — the heatmap axes
+    pivot   : pd.DataFrame         — the pivot table passed to sns.heatmap
+    teams   : list of str          — row labels (must match pivot index order)
+    seasons : list of str          — column labels (must match pivot column order,
+                                     i.e. readable season labels after renaming)
+    """
+    for i, team in enumerate(teams):
+        for j, season in enumerate(seasons):
+            if np.isnan(pivot.loc[team, season]):
+                ax.add_patch(
+                    plt.Rectangle((j, i), 1, 1, fill=True, color='#cccccc', lw=0)
+                )
