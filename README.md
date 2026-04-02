@@ -24,15 +24,19 @@ euro-football-discipline-stats/
 │   ├── 01_data_scraping.ipynb          # Data collection from multiple sources
 │   ├── 02_eda_and_wrangling.ipynb      # Data quality checks, exploration, reshaping
 │   ├── 03_single_season_test.ipynb     # Hypothesis test pipeline — one league, one season
-│   ├── 04_multi_season_analysis.ipynb  # Season-by-season extension (planned)
-│   └── 05_confounder_analysis.ipynb    # Home/away, opponents, referee effects (planned)
+│   ├── 04_multi_season_analysis.ipynb  # Season-by-season extension — Serie A (10 seasons)
+│   ├── 05_cross_league_analysis.ipynb  # Cross-league comparison — PL, La Liga, Bundesliga
+│   └── 06_forced_cards_analysis.ipynb  # Reverse direction: fouls received → cards forced
 │
 ├── src/
-│   ├── plots.py                        # Reusable plotting functions (EDA)
+│   ├── plots.py                        # Reusable plotting functions (EDA and results)
 │   ├── hypothesis_tests.py             # Hypothesis test pipeline functions
-│   ├── scraper_football_data_co_uk.py
-│   ├── scraper_local_html.py
-│   └── scraper_espn_data.py
+│   ├── multi_season.py                 # Multi-season pooled analysis utilities
+│   ├── discipline_pipeline.py          # Parameterised pipeline (forward & reverse direction)
+│   └── scrapers/
+│       ├── scraper_football_data_co_uk.py
+│       ├── scraper_local_html.py
+│       └── scraper_espn_data.py
 │
 ├── data/
 │   ├── raw/                            # Raw scraped data (not tracked by git)
@@ -62,8 +66,6 @@ Season-aggregate data for UEFA club competitions (Champions League, Europa Leagu
 
 Source: FBref / ESPN
 
-> Note: international competition data cleaning is in progress. See `02_eda_and_wrangling.ipynb` for current status.
-
 ---
 
 ## Notebooks
@@ -74,8 +76,9 @@ Source: FBref / ESPN
 | `01_data_scraping.ipynb` | Collects raw data from multiple sources via web scraping |
 | `02_eda_and_wrangling.ipynb` | Checks data quality (nulls, duplicates, outliers), explores distributions, and reshapes data into a team-oriented structure for analysis |
 | `03_single_season_test.ipynb` | Step-by-step hypothesis test for one league and season: Bernoulli model, z-test, exact binomial, assumption checks, bootstrap, Mann-Whitney — applied to four teams (Juventus, Napoli, Inter, Udinese) |
-| `04_multi_season_analysis.ipynb` | *(planned)* Season-by-season extension of the single-season pipeline |
-| `05_confounder_analysis.ipynb` | *(planned)* Controls for home/away split, opponent strength, and referee assignment |
+| `04_multi_season_analysis.ipynb` | Season-by-season extension of the single-season pipeline across 10 Serie A seasons; identifies teams with persistent high/low card rates and applies pooled tests |
+| `05_cross_league_analysis.ipynb` | Cross-league comparison extending the analysis to Premier League, La Liga, and Bundesliga; applies Z-screening, bootstrap, and Mann-Whitney per team and per season |
+| `06_forced_cards_analysis.ipynb` | Reverse direction analysis: studies fouls received vs yellow cards forced by opponent, identifying teams that are unusually effective (or ineffective) at drawing bookings |
 
 ---
 
