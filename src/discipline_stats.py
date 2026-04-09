@@ -101,28 +101,31 @@ class TestResults:
 # Data preparation
 # ===========================================================================
 
-def filter_league_season(df, league, season):
+def filter_league_season(df, league='Serie_A', season='2526'):
     """
-    Filter team_matches for a specific league and season.
+    Filter team_matches for a specific league and/or season.
 
     Parameters
     ----------
     df : pd.DataFrame
         The team_matches dataframe.
-    league : str
-        League name (e.g. 'Serie_A', 'Premier_League').
-    season : str
-        Season identifier (e.g. '2526').
+    league : str or None
+        League name (e.g. 'Serie_A', 'Premier_League'). None to skip filtering.
+    season : str or None
+        Season identifier (e.g. '2526'). None to skip filtering.
 
     Returns
     -------
     pd.DataFrame
         Filtered copy of the dataframe.
     """
-    return df[
-        (df['league'] == league) &
-        (df['season'] == season)
-    ].copy()
+    mask = pd.Series(True, index=df.index)
+    if league is not None:
+        mask &= df['league'] == league
+    if season is not None:
+        mask &= df['season'] == season
+    return df[mask].copy()
+
 
 
 # ===========================================================================
@@ -705,4 +708,151 @@ def compare_two_teams(df, column, team_a, team_b, n_permutations=10_000, seed=42
         stats_dict=stats_dict,
         tests_dict=tests_dict,
         effect_sizes=effect_sizes,
+    )
+
+
+# ===========================================================================
+# Hypothesis testing — general comparisons (two groups, one group vs threshold)
+# ===========================================================================
+
+
+def compare_two_groups(a, b, label_a='Group A', label_b='Group B', n_permutations=10_000, seed=42):
+    """
+    Compare two independent groups on a numeric variable.
+
+    Parameters
+    ----------
+    a : array-like
+        Values for group A.
+    b : array-like
+        Values for group B.
+    label_a : str
+        Display name for group A.
+    label_b : str
+        Display name for group B.
+    n_permutations : int
+    seed : int
+
+    Returns
+    -------
+    TestResults
+    """
+    a = np.asarray(a, dtype=float)
+    b = np.asarray(b, dtype=float)
+    np.random.seed(seed)
+
+    n1, n2 = len(a), len(b)
+    diff = a.mean() - b.mean()
+
+    # Student's t-test
+    t_s, p_s = stats.ttest_ind(a, b, equal_var=True)
+
+    # Welch's t-test
+    t_w, p_w = stats.ttest_ind(a, b, equal_var=False)
+
+    # Mann-Whitney U
+    u_stat, u_p = stats.mannwhitneyu(a, b, alternative='two-sided')
+    rank_biserial = 1 - (2 * u_stat) / (n1 * n2)
+
+    # Cohen's d
+    pooled_std = np.sqrt((a.std(ddof=1)**2 + b.std(ddof=1)**2) / 2)
+    cohens_d = diff / pooled_std if pooled_std > 0 else np.nan
+
+    # Permutation test
+    pooled = np.concatenate([a, b])
+    count = 0
+    for _ in range(n_permutations):
+        np.random.shuffle(pooled)
+        perm_diff = pooled[:n1].mean() - pooled[n1:].mean()
+        if abs(perm_diff) >= abs(diff):
+            count += 1
+    p_perm = count / n_permutations
+
+    return TestResults(
+        f"{label_a} vs {label_b}",
+        {
+            f'mean_{label_a}': round(a.mean(), 4),
+            f'mean_{label_b}': round(b.mean(), 4),
+            f'std_{label_a}': round(a.std(ddof=1), 4),
+            f'std_{label_b}': round(b.std(ddof=1), 4),
+            f'n_{label_a}': n1,
+            f'n_{label_b}': n2,
+            'mean_diff': round(diff, 4),
+        },
+        {
+            'student_t': {'statistic': round(t_s, 4), 'p_value': round(p_s, 4)},
+            'welch_t': {'statistic': round(t_w, 4), 'p_value': round(p_w, 4)},
+            'mann_whitney': {'statistic': round(u_stat, 1), 'p_value': round(u_p, 4)},
+            'permutation': {'statistic': None, 'p_value': round(p_perm, 4)},
+        },
+        {
+            'cohens_d': round(cohens_d, 4),
+            'rank_biserial': round(rank_biserial, 4),
+        }
+    )
+
+
+def compare_mean_to_threshold(a, threshold, label='Group', n_bootstrap=10_000, seed=42):
+    """
+    Test whether a group's mean differs from a known threshold (one-sample tests).
+
+    Parameters
+    ----------
+    a : array-like
+        Observed values.
+    threshold : float
+        The reference value to test against (no uncertainty).
+    label : str
+        Display name for the group.
+    n_bootstrap : int
+    seed : int
+
+    Returns
+    -------
+    TestResults
+    """
+    a = np.asarray(a, dtype=float)
+    rng = np.random.default_rng(seed)
+
+    n = len(a)
+    obs_mean = a.mean()
+    diff = obs_mean - threshold
+
+    # One-sample t-test
+    t_stat, p_t = stats.ttest_1samp(a, threshold)
+
+    # Wilcoxon signed-rank test
+    try:
+        w_stat, p_w = stats.wilcoxon(a - threshold, alternative='two-sided')
+    except ValueError:
+        w_stat, p_w = np.nan, 1.0
+
+    # Cohen's d (one-sample)
+    cohens_d = diff / a.std(ddof=1) if a.std(ddof=1) > 0 else np.nan
+
+    # Bootstrap test
+    centred = a - obs_mean + threshold
+    count = 0
+    for _ in range(n_bootstrap):
+        sample = rng.choice(centred, size=n, replace=True)
+        if abs(sample.mean() - threshold) >= abs(diff):
+            count += 1
+    p_boot = count / n_bootstrap
+
+    return TestResults(
+        f"{label} vs threshold ({threshold})",
+        {
+            'observed_mean': round(obs_mean, 4),
+            'threshold': threshold,
+            'n': n,
+            'mean_diff': round(diff, 4),
+        },
+        {
+            'one_sample_t': {'statistic': round(t_stat, 4), 'p_value': round(p_t, 4)},
+            'wilcoxon': {'statistic': round(float(w_stat), 1) if not np.isnan(w_stat) else None, 'p_value': round(float(p_w), 4)},
+            'bootstrap': {'statistic': None, 'p_value': round(p_boot, 4)},
+        },
+        {
+            'cohens_d': round(cohens_d, 4),
+        }
     )
