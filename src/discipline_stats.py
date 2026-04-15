@@ -282,9 +282,47 @@ def plot_home_away_distribution(df, column, title=None, bins=15,
     return fig, ax
 
 
+# def plot_league_bar(summary_df, title=None, figsize=(12, 7),
+#                     xlabel='Difference from league average',
+#                     above_color='tomato', below_color='steelblue'):
+#     """
+#     Diverging horizontal bar chart of team deviations from league average.
+
+#     Parameters
+#     ----------
+#     summary_df : pd.DataFrame
+#         Output of team_summary(), must have 'diff_from_league' column.
+#     title : str, optional
+#     figsize : tuple
+#     xlabel : str
+#     above_color : str
+#     below_color : str
+
+#     Returns
+#     -------
+#     fig, ax
+#     """
+#     with sns.axes_style("whitegrid"):
+#         fig, ax = plt.subplots(figsize=figsize)
+#         ax.set_facecolor('#f0f0f0')
+
+#         colors = [above_color if x > 0 else below_color
+#                   for x in summary_df['diff_from_league']]
+
+#         ax.barh(summary_df.index, summary_df['diff_from_league'],
+#                 color=colors, alpha=0.8)
+#         ax.axvline(0, color='black', linewidth=0.8)
+#         ax.set_xlabel(xlabel)
+#         ax.set_title(title or 'Team deviation from league average')
+#         ax.invert_yaxis()
+#         plt.tight_layout()
+
+#     return fig, ax
+
 def plot_league_bar(summary_df, title=None, figsize=(12, 7),
                     xlabel='Difference from league average',
-                    above_color='tomato', below_color='steelblue'):
+                    above_color='tomato', below_color='steelblue',
+                    ax=None):
     """
     Diverging horizontal bar chart of team deviations from league average.
 
@@ -297,13 +335,18 @@ def plot_league_bar(summary_df, title=None, figsize=(12, 7),
     xlabel : str
     above_color : str
     below_color : str
+    ax : matplotlib.axes.Axes, optional
+        If provided, plot on this axes instead of creating a new figure.
 
     Returns
     -------
     fig, ax
     """
     with sns.axes_style("whitegrid"):
-        fig, ax = plt.subplots(figsize=figsize)
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize)
+        else:
+            fig = ax.get_figure()
         ax.set_facecolor('#f0f0f0')
 
         colors = [above_color if x > 0 else below_color
@@ -313,11 +356,12 @@ def plot_league_bar(summary_df, title=None, figsize=(12, 7),
                 color=colors, alpha=0.8)
         ax.axvline(0, color='black', linewidth=0.8)
         ax.set_xlabel(xlabel)
-        ax.set_title(title or 'Team deviation from league average')
-        ax.invert_yaxis()
-        plt.tight_layout()
+
+        if title:
+            ax.set_title(title)
 
     return fig, ax
+
 
 
 def plot_forest(results_df, df, column, title=None, figsize=(12, 8),
