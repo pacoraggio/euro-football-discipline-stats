@@ -23,10 +23,12 @@ euro-football-discipline-stats/
 │   ├── 00_research_framework.ipynb     # Scientific goals, methodology, known limitations
 │   ├── 01_data_scraping.ipynb          # Data collection from multiple sources
 │   ├── 02_eda_and_wrangling.ipynb      # Data quality checks, exploration, reshaping
-│   ├── 03_single_season_test.ipynb     # Hypothesis test pipeline — one league, one season
-│   ├── 04_multi_season_analysis.ipynb  # Season-by-season extension — Serie A (10 seasons)
-│   ├── 05_cross_league_analysis.ipynb  # Cross-league comparison — PL, La Liga, Bundesliga
-│   └── 06_forced_cards_analysis.ipynb  # Reverse direction: fouls received → cards forced
+│   ├── 03_fouls_analysis.ipynb         # Serie A fouls — distribution, t-tests, Mann-Whitney, permutations
+│   ├── 04_yellow_cards_analysis.ipynb  # Serie A yellow cards — same toolkit applied to discrete count data
+│   ├── 05_single_season_test.ipynb     # Cards-per-foul ratio test — one league, one season (4 teams)
+│   ├── 06_cross_league_analysis.ipynb  # Cross-league comparison — PL, La Liga, Bundesliga
+│   ├── 07_forced_cards_analysis.ipynb  # Reverse direction: fouls received → cards forced
+│   └── 08_multi_season_analysis.ipynb  # Season-by-season extension — Serie A (15 seasons)
 │
 ├── src/
 │   ├── plots.py                        # Reusable plotting functions (EDA and results)
@@ -75,10 +77,14 @@ Source: FBref / ESPN
 | `00_research_framework.ipynb` | Lays out the scientific goals, data structure, analytical approach, and known limitations before any code is written |
 | `01_data_scraping.ipynb` | Collects raw data from multiple sources via web scraping |
 | `02_eda_and_wrangling.ipynb` | Checks data quality (nulls, duplicates, outliers), explores distributions, and reshapes data into a team-oriented structure for analysis |
-| `03_single_season_test.ipynb` | Step-by-step hypothesis test for one league and season: Bernoulli model, z-test, exact binomial, assumption checks, bootstrap, Mann-Whitney — applied to four teams (Juventus, Napoli, Inter, Udinese) |
-| `04_multi_season_analysis.ipynb` | Season-by-season extension of the single-season pipeline across 10 Serie A seasons; identifies teams with persistent high/low card rates and applies pooled tests |
-| `05_cross_league_analysis.ipynb` | Cross-league comparison extending the analysis to Premier League, La Liga, and Bundesliga; applies Z-screening, bootstrap, and Mann-Whitney per team and per season |
-| `06_forced_cards_analysis.ipynb` | Reverse direction analysis: studies fouls received vs yellow cards forced by opponent, identifying teams that are unusually effective (or ineffective) at drawing bookings |
+| `03_fouls_analysis.ipynb` | Serie A fouls (2025/26): distribution and normality checks, home/away comparison, team-vs-rest tests with Student's t, Welch's t, Mann-Whitney U, and permutation tests. Builds the reusable hypothesis-test toolkit |
+| `04_yellow_cards_analysis.ipynb` | Same toolkit applied to yellow cards in Serie A 2025/26. Highlights how a discrete, low-count variable changes which tests are appropriate (Mann-Whitney becomes the more reliable choice) |
+| `05_single_season_test.ipynb` | Step-by-step hypothesis test for the cards-per-foul ratio: Bernoulli model, z-test, exact binomial, overdispersion and autocorrelation checks, bootstrap, Mann-Whitney — applied to four teams (Juventus, Napoli, Inter, Udinese) |
+| `06_cross_league_analysis.ipynb` | Extends the analysis to Premier League, La Liga, and Bundesliga; first replicates the within-league fouls/cards comparisons, then tackles cross-league questions per team and per season |
+| `07_forced_cards_analysis.ipynb` | Reverse direction analysis: studies fouls received vs yellow cards forced by opponent, identifying teams that are unusually effective (or ineffective) at drawing bookings |
+| `08_multi_season_analysis.ipynb` | Season-by-season extension across 15 Serie A seasons; identifies teams with persistent high/low card rates and applies pooled tests |
+
+**Notebook style.** Each analytical notebook (03 onward) introduces a tool, extracts it to `src/` once stable, and reuses it from later notebooks without re-derivation. A short header in each notebook lists what it adds and what it imports from previous work.
 
 ---
 
