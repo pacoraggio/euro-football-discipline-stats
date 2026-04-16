@@ -161,6 +161,50 @@ def team_summary(df, column):
     return result
 
 
+def rate_summary(df, numerator='yellow_cards', denominator='fouls_committed'):
+    """
+    Per-team summary of the rate (numerator / denominator),
+    comparing the mean-of-per-match-ratios with the ratio-of-totals.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Filtered dataframe (single league/season) with team-level rows.
+    numerator : str
+        Column for the numerator (e.g. 'yellow_cards').
+    denominator : str
+        Column for the denominator (e.g. 'fouls_committed').
+
+    Returns
+    -------
+    pd.DataFrame
+        One row per team, sorted by ratio_of_totals.
+    """
+    col_ratio = f'{numerator}_per_{denominator}'
+    df = df.copy()
+    df[col_ratio] = df[numerator] / df[denominator]
+
+    agg = (
+        df.groupby('team')
+        .agg(
+            total_denominator=(denominator, 'sum'),
+            total_numerator=(numerator, 'sum'),
+            matches=('team', 'size'),
+            mean_ratio=(col_ratio, 'mean'),
+        )
+        .reset_index()
+    )
+
+    agg['ratio_of_totals'] = agg['total_numerator'] / agg['total_denominator']
+    agg['inv_mean_ratio'] = 1 / agg['mean_ratio']
+    agg['inv_ratio_of_totals'] = 1 / agg['ratio_of_totals']
+
+    return (
+        agg.sort_values(by=['ratio_of_totals', 'team'])
+        .reset_index(drop=True)
+    )
+
+
 def venue_summary(df, column):
     """
     Home vs. away descriptive statistics for a given column.

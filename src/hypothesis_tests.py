@@ -200,12 +200,18 @@ def mannwhitney_test(team_name, season_df):
     Parameters
     ----------
     team_name : str
-    season_df : pd.DataFrame — must contain 'ycards_per_fouls'.
+    season_df : pd.DataFrame — must contain 'yellow_cards' and 'fouls_committed'.
+                If 'ycards_per_fouls' is absent it is computed on the fly.
 
     Returns
     -------
     dict with keys: u_stat, p_value, n1, n2, r_rb (rank-biserial correlation)
     """
+    if 'ycards_per_fouls' not in season_df.columns:
+        season_df = season_df.copy()
+        season_df['ycards_per_fouls'] = (season_df['yellow_cards'] /
+                                          season_df['fouls_committed'])
+
     team_df    = season_df[season_df['team'] == team_name]
     rest_df    = season_df[season_df['team'] != team_name]
     team_rates = team_df['ycards_per_fouls'].dropna().values
