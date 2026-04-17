@@ -8,7 +8,7 @@ The project is designed to be both analytical and pedagogical: it demonstrates h
 
 ## Research Question
 
-> Given a team, is the number of yellow (or red) cards it receives statistically different from other teams — and does this pattern persist across different competitions?
+> Given a team, is the number of yellow (or red) cards per fouls it receives statistically different from other teams - and does this pattern persist across different competitions?
 
 The analysis normalises cards by fouls committed to control for differences in playing style, and checks whether any anomalous behaviour identified in one league replicates across others.
 
