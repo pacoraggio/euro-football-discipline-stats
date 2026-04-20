@@ -326,6 +326,103 @@ def plot_home_away_distribution(df, column, title=None, bins=15,
     return fig, ax
 
 
+def plot_boxplot(df, column, title=None, color='steelblue',
+                 figsize=(12, 4), xlabel=None, ylabel='',
+                 flier_color='red', strip=True, annotate=True,
+                 label_color='#2d6a2d', ax=None):
+    """
+    Horizontal boxplot of a single column with IQR summary annotations.
+
+    Draws the box, whiskers and fliers, overlays a strip plot of raw points,
+    and (optionally) marks lower whisker, Q1, median, Q3 and upper whisker
+    with dashed reference lines and rotated labels above the plot.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+    column : str
+    title : str, optional
+    color : str
+        Box fill colour. Default 'steelblue'.
+    figsize : tuple
+        Ignored when `ax` is provided.
+    xlabel : str, optional
+        Falls back to the column name title-cased.
+    ylabel : str
+    flier_color : str
+        Colour of outlier markers. Default 'red'.
+    strip : bool
+        If True, overlay a stripplot of raw observations.
+    annotate : bool
+        If True, add Q1/median/Q3/whisker reference lines and labels.
+    label_color : str
+        Colour of the annotation labels.
+    ax : matplotlib.axes.Axes, optional
+        If provided, plot on this axes instead of creating a new figure.
+
+    Returns
+    -------
+    fig, ax
+    """
+    q1 = df[column].quantile(0.25)
+    q3 = df[column].quantile(0.75)
+    iqr = q3 - q1
+    median = df[column].median()
+    lower_whisker = df[column][df[column] >= q1 - 1.5 * iqr].min()
+    upper_whisker = df[column][df[column] <= q3 + 1.5 * iqr].max()
+
+    with sns.axes_style("whitegrid"):
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize)
+        else:
+            fig = ax.get_figure()
+        ax.set_facecolor('#f0f0f0')
+
+        sns.boxplot(
+            data=df,
+            x=column,
+            color=color,
+            flierprops=dict(marker='o', color=flier_color,
+                            markerfacecolor=flier_color, markersize=6),
+            ax=ax,
+        )
+        for patch in ax.patches:
+            patch.set_alpha(0.4)
+
+        if strip:
+            sns.stripplot(
+                data=df,
+                x=column,
+                color='black',
+                size=3,
+                alpha=0.2,
+                ax=ax,
+            )
+
+        if annotate:
+            line_props = dict(color='grey', linestyle='--', linewidth=1)
+            labels = [
+                (lower_whisker, f'Lower whisker: {lower_whisker:.1f}'),
+                (q1,            f'Q1: {q1:.1f}'),
+                (median,        f'Median: {median:.1f}'),
+                (q3,            f'Q3: {q3:.1f}'),
+                (upper_whisker, f'Upper whisker: {upper_whisker:.1f}'),
+            ]
+            for val, label in labels:
+                ax.axvline(val, **line_props)
+                ax.text(val, 1.02, label, transform=ax.get_xaxis_transform(),
+                        fontsize=9, color=label_color,
+                        ha='left', va='bottom', rotation=35)
+
+        ax.set_xlabel(xlabel or column.replace('_', ' ').title())
+        ax.set_ylabel(ylabel)
+        ax.set_title(title or f'Boxplot of {column.replace("_", " ")}',
+                     pad=70 if annotate else 10)
+        plt.tight_layout()
+
+    return fig, ax
+
+
 # def plot_league_bar(summary_df, title=None, figsize=(12, 7),
 #                     xlabel='Difference from league average',
 #                     above_color='tomato', below_color='steelblue'):
